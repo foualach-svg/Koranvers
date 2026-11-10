@@ -259,3 +259,20 @@ object AudioCache {
         files.drop(40).forEach { it.delete() }
     }
 }
+
+/* ---------------------------------------------------------------- Logboek (voor probleemoplossing) */
+
+object DebugLog {
+    private const val KEY = "log"
+
+    fun add(ctx: Context, msg: String) {
+        val p = ctx.applicationContext.getSharedPreferences("koranvers_log", Context.MODE_PRIVATE)
+        val time = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())
+        val lines = (p.getString(KEY, "") ?: "").lines().filter { it.isNotBlank() }.takeLast(14)
+        p.edit().putString(KEY, (lines + "$time  $msg").joinToString("\n")).apply()
+    }
+
+    fun read(ctx: Context): String =
+        ctx.applicationContext.getSharedPreferences("koranvers_log", Context.MODE_PRIVATE)
+            .getString(KEY, "") ?: ""
+}

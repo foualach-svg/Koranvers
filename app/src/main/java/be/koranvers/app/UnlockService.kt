@@ -49,9 +49,12 @@ class UnlockService : Service() {
         val f = IntentFilter().apply {
             addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
         }
         if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED)
         else registerReceiver(receiver, f)
+        running = true
+        DebugLog.add(this, "Achtergronddienst gestart")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -63,6 +66,8 @@ class UnlockService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
+        DebugLog.add(this, "Achtergronddienst gestopt")
         try { unregisterReceiver(receiver) } catch (_: Exception) {}
         super.onDestroy()
     }
@@ -70,21 +75,38 @@ class UnlockService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun onScreenEvent(action: String?) {
+        if (action == Intent.ACTION_SCREEN_OFF) {
+            VerseOverlay.hide(this); return
+        }
         val prefs = Prefs(this)
         if (!prefs.enabled) return
-        // Op vergrendelscherm: reageren op 'scherm aan'. Anders: pas na ontgrendelen.
-        val wanted = if (prefs.onLockscreen) Intent.ACTION_SCREEN_ON else Intent.ACTION_USER_PRESENT
-        if (action != wanted) return
         // Niet storen tijdens (inkomende) oproepen.
         val am = getSystemService(AudioManager::class.java)
         if (am.mode == AudioManager.MODE_IN_CALL || am.mode == AudioManager.MODE_IN_COMMUNICATION ||
             am.mode == AudioManager.MODE_RINGTONE
-        ) return
-        if (System.currentTimeMillis() - prefs.lastShown < prefs.minIntervalSec * 1000L) return
-        launchVerse(this)
+        ) { DebugLog.add(this, "Overgeslagen: gesprek bezig"); return }
+
+        val now = System.currentTimeMillis()
+        val tooSoon = now - prefs.lastShown < prefs.minIntervalSec * 1000L
+
+        if (action == Intent.ACTION_SCREEN_ON && prefs.onLockscreen) {
+            DebugLog.add(this, "Scherm aan")
+            if (tooSoon) return
+            launchVerse(this)
+            return
+        }
+        if (action == Intent.ACTION_USER_PRESENT) {
+            DebugLog.add(this, "Ontgrendeld")
+            // Op vergrendelscherm al getoond (minder dan 20 s geleden)? Dan niets meer doen.
+            if (prefs.onLockscreen && now - prefs.lastShown < 20_000L) return
+            if (tooSoon) return
+            showAfterUnlock(this)
+        }
     }
 
     companion object {
+        @Volatile var running = false
+
         fun sync(ctx: Context) {
             val i = Intent(ctx, UnlockService::class.java)
             if (Prefs(ctx).enabled) ctx.startForegroundService(i) else ctx.stopService(i)
@@ -102,15 +124,29 @@ fun createChannels(ctx: Context) {
     )
 }
 
-/** Opent het versscherm. Zonder 'weergeven over andere apps' valt het terug op een melding. */
+/** Na ontgrendelen: vers als overlay over het scherm (meest betrouwbaar). */
+fun showAfterUnlock(ctx: Context) {
+    if (Settings.canDrawOverlays(ctx)) {
+        try {
+            VerseOverlay.show(ctx)
+            DebugLog.add(ctx, "Overlay getoond")
+            return
+        } catch (e: Exception) {
+            DebugLog.add(ctx, "Overlay mislukt: ${e.javaClass.simpleName} ${e.message}")
+        }
+    } else DebugLog.add(ctx, "Geen toestemming 'weergeven over andere apps'")
+    launchVerse(ctx)
+}
+
+/** Opent het versscherm als activity (ook boven het vergrendelscherm). Valt terug op een melding. */
 fun launchVerse(ctx: Context) {
     val i = Intent(ctx, VerseActivity::class.java)
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-    if (Settings.canDrawOverlays(ctx)) {
-        try {
-            ctx.startActivity(i); return
-        } catch (_: Exception) {
-        }
+    try {
+        ctx.startActivity(i)
+        DebugLog.add(ctx, "Versscherm gestart")
+    } catch (e: Exception) {
+        DebugLog.add(ctx, "Versscherm mislukt: ${e.javaClass.simpleName}")
     }
     try {
         createChannels(ctx)
@@ -125,7 +161,9 @@ fun launchVerse(ctx: Context) {
             .setContentIntent(pi)
             .setFullScreenIntent(pi, true)
             .setAutoCancel(true)
+            .setTimeoutAfter(60_000L)
             .build()
+        // Melding als vangnet; wordt meteen weggehaald zodra het vers getoond is.
         ctx.getSystemService(NotificationManager::class.java).notify(NOTIF_VERSE, n)
     } catch (_: Exception) {
     }

@@ -113,7 +113,7 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.btnTest).setOnClickListener {
             if (!QuranData.isDownloaded(this, Qiraat.ARABIC_EDITION)) toast("Eerst de tekst downloaden")
-            else startActivity(Intent(this, VerseActivity::class.java))
+            else showAfterUnlock(this)
         }
         findViewById<Button>(R.id.btnJump).setOnClickListener {
             if (!QuranData.isDownloaded(this, Qiraat.ARABIC_EDITION)) return@setOnClickListener
@@ -131,6 +131,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        if (prefs.enabled && !UnlockService.running) UnlockService.sync(this)
         refreshPerms()
         refreshNext()
     }
@@ -198,8 +199,10 @@ class MainActivity : Activity() {
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         tvPerms.text = buildString {
             append(if (overlay) "✅" else "❌").append(" Weergeven over andere apps (nodig om vanzelf te openen)\n")
-            append(if (notif) "✅" else "❌").append(" Meldingen (nodig voor de achtergronddienst)")
+            append(if (notif) "✅" else "❌").append(" Meldingen (nodig voor de achtergronddienst)\n")
+            append(if (UnlockService.running) "✅" else "❌").append(" Achtergronddienst actief")
         }
+        findViewById<TextView>(R.id.tvLog).text = DebugLog.read(this).ifEmpty { "(nog leeg)" }
     }
 
     private fun askOverlay() {
