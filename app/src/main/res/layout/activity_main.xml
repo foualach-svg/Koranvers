@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="20dp">
+
+        <TextView android:id="@+id/tvStatus" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:textSize="14sp" />
+        <Button android:id="@+id/btnRetry" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="Opnieuw proberen" android:visibility="gone" />
+
+        <Switch android:id="@+id/swEnabled" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="16dp"
+            android:textSize="18sp" android:textStyle="bold"
+            android:text="Toon een vers bij elk ontgrendelen" />
+
+        <TextView android:id="@+id/tvNext" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textSize="14sp" />
+
+        <TextView style="@style/Section" android:text="Qiraat (riwāyah)" />
+        <Spinner android:id="@+id/spRiwayah" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView style="@style/Label" android:text="Reciteur" />
+        <Spinner android:id="@+id/spReciter" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView style="@style/Section" android:text="Vertaling" />
+        <Spinner android:id="@+id/spTranslation" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView style="@style/Section" android:text="Gedrag" />
+        <Switch android:id="@+id/swLockscreen" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="6dp" android:text="Al tonen op het vergrendelscherm (scherm aan)" />
+        <Switch android:id="@+id/swAutoplay" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:text="Audio automatisch afspelen" />
+        <Switch android:id="@+id/swSilent" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" android:text="Geen audio als gsm op stil/trillen staat" />
+        <TextView style="@style/Label" android:text="Hoe vaak" />
+        <Spinner android:id="@+id/spInterval" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <TextView style="@style/Label" android:text="Lange verzen opsplitsen" />
+        <Spinner android:id="@+id/spSplit" android:layout_width="match_parent" android:layout_height="wrap_content" />
+
+        <TextView style="@style/Section" android:text="Voortgang" />
+        <Spinner android:id="@+id/spSurah" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <Button android:id="@+id/btnJump" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Verder vanaf begin van deze soera" />
+
+        <TextView style="@style/Section" android:text="Toestemmingen" />
+        <TextView android:id="@+id/tvPerms" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:lineSpacingMultiplier="1.3" />
+        <Button android:id="@+id/btnOverlay" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Weergeven over andere apps toestaan" />
+        <Button android:id="@+id/btnNotif" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Meldingen toestaan" />
+        <Button android:id="@+id/btnBattery" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Batterijoptimalisatie uitzetten" />
+        <Button android:id="@+id/btnTest" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:text="Test: toon het volgende vers nu" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" android:textSize="12sp" android:alpha="0.6"
+            android:text="Tekst en vertalingen: alquran.cloud · Audio per vers: everyayah.com" />
+    </LinearLayout>
+</ScrollView>

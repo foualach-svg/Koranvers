@@ -1,0 +1,12 @@
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">#0E3B2E</item>
+        <item name="android:colorPrimaryDark">#0A2A21</item>
+        <item name="android:colorAccent">#0E7A55</item>
+    </style>
+    <style name="VerseTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/verse_bg</item>
+        <item name="android:statusBarColor">@color/verse_bg</item>
+        <item name="android:navigationBarColor">@color/verse_bg</item>
+    </style>
+</resources>
